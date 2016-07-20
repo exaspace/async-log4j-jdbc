@@ -1,0 +1,76 @@
+description = 'Async Log4J Queue'
+
+apply plugin: 'java'
+apply plugin: 'docker'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'log4j:log4j:1.2.16'
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'commons-lang:commons-lang:2.6'
+    testCompile 'commons-collections:commons-collections:3.2.1'
+    testCompile 'org.hsqldb:hsqldb:2.3.4'
+    testCompile 'mysql:mysql-connector-java:5.1.39'
+    testCompile 'org.postgresql:postgresql:9.4.1208'
+
+    // The dependencies below are not in public repos.
+    //
+    //    testCompile 'com.microsoft:sqljdbc4:3.0'
+    //    testCompile 'com.mannhaupt:log4j-jdbcplus:1.0'
+
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'se.transmode.gradle:gradle-docker:1.2'
+        classpath 'pl.allegro.tech.build:axion-release-plugin:1.3.4'
+    }
+}
+
+ext {
+    database = project.hasProperty('database') ? project.property('database') : 'hsql'
+}
+
+task demo(type:JavaExec) {
+   main = "org.exaspace.log4jq.demo.Demo"
+   classpath = sourceSets.test.runtimeClasspath
+   args = [database]
+}
+
+task testJar(type: Jar) {
+    classifier = 'tests'
+    from sourceSets.test.output
+}
+
+docker {
+    maintainer 'Ben <ben@kappia.com>'
+    baseImage 'java:8'
+}
+
+/*
+scmVersion {
+    tag {
+        prefix = "$project.name"
+    }
+    versionIncrementer 'incrementPatch'
+    versionCreator 'versionWithBranch'
+}
+project.version = scmVersion.version
+
+jar {
+    baseName = "$project.name"
+    version = "$project.version"
+}
+
+*/
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.14'
+}

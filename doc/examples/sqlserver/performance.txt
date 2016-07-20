@@ -1,0 +1,14 @@
+
+Run 1 - Comparison vs jdbcplus & bundled jdbc appender
+
+	static int LOOPS_PER_THREAD = 1000;
+	static int NUM_THREADS = 15;
+	static long MESSAGE_INTERVAL_MILLIS = 10;
+	static int SYSOUT_MODULUS = 1000;
+	static boolean RECONFIGURE = false;
+
+DUMMY_INSTANT 30000msgs 10063ms 0.33543333ms per msg 2981.2183msgs per sec
+JDBC_NEW_ASYNC 30000msgs 10318ms 0.34393334ms per msg 2907.54msgs per sec
+JDBC_NEW_SYNC 30000msgs 34688ms 1.1562667ms per msg 864.85236msgs per sec
+JDBC_PLUS 30000msgs 82418ms 2.7472668ms per msg 363.99814msgs per sec
+JDBC_BUNDLED 30000msgs 68577ms 2.2859ms per msg 437.46445msgs per sec
