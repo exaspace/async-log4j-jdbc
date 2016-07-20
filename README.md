@@ -4,6 +4,7 @@
     | |-||\___ | / /  | | \|||  \_   | |_/\| \_/|| |_//   | |/\_| |
     \_/ \|\____//_/   \_/  \|\____/  \____/\____/\____\   \_|\____/
 
+[![Build Status](https://travis-ci.org/exaspace/async-log4j-jdbc.svg?branch=master)](https://travis-ci.org/exaspace/async-log4j-jdbc)
 
 # Asynchronous database logging (Log4J version).
 
