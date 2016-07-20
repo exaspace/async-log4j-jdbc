@@ -1,7 +1,10 @@
-description = 'Async Log4J Queue'
 
-apply plugin: 'java'
-apply plugin: 'docker'
+plugins {
+    id 'java'
+    id 'pl.allegro.tech.build.axion-release' version '1.3.5'
+}
+
+description = 'Async Log4J Queue'
 
 repositories {
     mavenCentral()
@@ -24,16 +27,6 @@ dependencies {
 
 }
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'se.transmode.gradle:gradle-docker:1.2'
-        classpath 'pl.allegro.tech.build:axion-release-plugin:1.3.4'
-    }
-}
-
 ext {
     database = project.hasProperty('database') ? project.property('database') : 'hsql'
 }
@@ -49,19 +42,12 @@ task testJar(type: Jar) {
     from sourceSets.test.output
 }
 
-docker {
-    maintainer 'Ben <ben@kappia.com>'
-    baseImage 'java:8'
-}
-
-/*
 scmVersion {
     tag {
-        prefix = "$project.name"
+        prefix = ""
     }
-    versionIncrementer 'incrementPatch'
-    versionCreator 'versionWithBranch'
 }
+
 project.version = scmVersion.version
 
 jar {
@@ -69,8 +55,8 @@ jar {
     version = "$project.version"
 }
 
-*/
-
 task wrapper(type: Wrapper) {
     gradleVersion = '2.14'
 }
+
+
