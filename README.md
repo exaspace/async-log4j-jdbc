@@ -104,13 +104,13 @@ You can set system property "log4jq.debug" to "true" to output more internal inf
 Warning use Log4J's internal standard LogLog.warn() method.
 
 
-### See a demo!
+### See a live demo!
 
 First clone this repo and cd into it, then:
 
-    docker run -d --name postgres -p 5432:5432 postgres
-    docker build -t demo .
-    docker run --rm --name demo --link postgres demo
+    docker run -d --name postgres -p 5432:5432 postgres  # let's start a postgres database server
+    docker build -t demo .                               # compile the demo into a docker container
+    docker run --rm --name demo --link postgres demo     # now run the demo, linking it so it can see postgres
 
 The demo app configures Log4J (see "src/test/resources/demo/postgres/log4j.properties"), creating a table called `applog` to hold the messages
 and then goes into a loop calling logger.info() (5 times per second by default).
