@@ -20,21 +20,23 @@ dependencies {
     testCompile 'mysql:mysql-connector-java:5.1.39'
     testCompile 'org.postgresql:postgresql:9.4.1208'
 
-    // The dependencies below are not in public repos.
-    //
-    //    testCompile 'com.microsoft:sqljdbc4:3.0'
-    //    testCompile 'com.mannhaupt:log4j-jdbcplus:1.0'
+    /*
+        The dependencies below are not in public repos.
+        Add to your own repositories if you need these.
 
-}
-
-ext {
-    database = project.hasProperty('database') ? project.property('database') : 'hsql'
+        testCompile 'com.microsoft:sqljdbc4:3.0'
+        testCompile 'com.mannhaupt:log4j-jdbcplus:1.0'
+    */
 }
 
 task demo(type:JavaExec) {
-   main = "org.exaspace.log4jq.demo.Demo"
-   classpath = sourceSets.test.runtimeClasspath
-   args = [database]
+    main = "org.exaspace.log4jq.demo.Demo"
+    classpath = sourceSets.test.runtimeClasspath
+    doFirst {
+        if(project.hasProperty('database')) {
+            environment 'DATABASE', project.property('database')
+        }
+    }
 }
 
 task testJar(type: Jar) {

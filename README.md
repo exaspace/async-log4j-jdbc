@@ -8,32 +8,34 @@
 
 # Asynchronous database logging (Log4J version).
 
-Log resiliently and robustly to a central database via JDBC.
+Log easily, resiliently and robustly to a central database via JDBC.
 
-* minimal runtime logging overhead (async hand off)
-* use industry standard logging framework - log4j - with no custom code needed
-* a tiny 12KB jar with no dependencies (apart from the log4j framework itself)
-* used in production for years in a large Fintech company
-* simple configuration via normal log4j mechanisms
+No coding needed, just update your Log4J configuration file.
 
-Benefits:
+Why log to an RDBMS?
 
-* collect log messages from multiple JVMs in realtime in a central location
-* isolate calling threads from I/O bottle necks
-* store log messages with standard log4j meta data (e.g. timestamp, priority, source file line number, etc.)
+* collect log messages easily from multiple JVMs in realtime in a central location
+* use any database that provides a JDBC driver
+* store log messages with standard Log4J pattern meta data (e.g. timestamp, priority, source file line number, etc.)
 * search your app logs in realtime with a proper query language - SQL
 * no new systems to support - backup and support of your RDBMS is already well understood
 
 
 ## What is this library?
 
-Simply a log4j appender `org.exaspace.log4jq.AsyncJdbcAppender` which you can drop straight into your application to send your application logs asynchronously and robustly to Postgres, MySQL or any other database server which has a JDBC driver.
+A Log4J appender `org.exaspace.log4jq.AsyncJdbcAppender` which you drop straight into your application to send
+your log messages asynchronously and robustly to any database that has a JDBC driver.
 
-The appender isolates your application threads from database slowdowns or outages. Log events are queued in memory if the database goes offline or cannot keep up with intense bursts of logging activity. The appender re-connects automatically to write any queued log events when the database comes back online. Logging is done asynchronously so your application threads don't block trying to do database I/O.
+Logging is done asynchronously so that your application threads don't block trying to do the actual database I/O.
 
-Most importantly this library has been extensively battle-tested in production.
+If your log database becomes slow or even totally unavailable, your application is not impacted and continues to log as normal.
 
-### Performance comparison
+The appender re-connects automatically to write any queued log events when the database comes back online.
+
+This appender has been battle tested in high volume production for years in a large financial services company.
+
+
+### Performance
 
 | Appender                                   | Msgs Per Second    |
 | ---------------------                      | -----------------: |
@@ -43,6 +45,20 @@ Most importantly this library has been extensively battle-tested in production.
 | org.apache.log4j.jdbcplus.JDBCAppender     | 364                |
 
 This example: Quad Core i7, 16GB RAM, MS Sql Server, XA driver, App & DB on same machine.
+
+
+### Design
+
+* application thread calling any logging method will hand off the log event immediately
+* a memory queue is used to buffer log events (`java.util.concurrent.BlockingDeque`)
+* log events are written to the database in the background
+* a single writer background thread is used (avoids further locking and gives highest write throughput)
+* automatically re-connects at a throttled rate if the database is disconnected (or on any form of SQL exception)
+* outputs warning messages if number of messages in the queue exceeds your configured warning threshold
+* outputs warning messages if the queue is full
+* configurable drain time once the application shuts down
+* a tiny 12KB jar with no dependencies (apart from Log4J of course)
+* minimal runtime logging overhead
 
 
 ### Appenders Provided
@@ -57,54 +73,6 @@ This appender is used by the async appender but can also be used directly. It is
 (an outage is defined as any time that the JDBC insert throws an exception) and then attempts to reconnect periodically,
 at which point logging will continue. A connection is opened and held open while the appender is managed by the log4j system.
 The log event is inserted to the database via a prepared statement.
-
-
-### See a demo!
-
-Clone this repo then:
-
-    # Start a database server. The demo app will create a table "applog".
-
-    $ docker run --name postgres -p 5432:5432 postgres
-
-    # By default the log4j config connects to a host called 'postgres' so
-    # either add that entry to your /etc/hosts (i.e. probably localhost or the
-    # address of your docker machine). Alternatively, modify the hostname directly in the log4j props file.
-
-    # Run the demo app which configures log4j via "src/test/resources/demo/postgres/log4j.properties"
-    # and then goes into a loop calling logger.info() 10 times per second
-
-    $ ./gradlew -Pdatabase=postgres demo
-
-
-This runs the `org.exaspace.log4jq.demo.Demo` application which just repeatedly calls logger.info(). You should see that application log messages are being inserted into the database (in this case, a table called "applog"). To see the count of messages:
-
-    $ psql -h postgres -U postgres -d postgres -c 'select count(*) from applog'
-
-Or if you don't have `psql` installed on your machine, you can run psql from a docker container:
-
-    $ docker run --rm --link postgres -it postgres psql -h postgres -U postgres \
-                  -d postgres -c 'select count(*) from applog'
-
-Then try
-
-    $ docker stop postgres
-    # ... observe messages being buffered to memory while the database is down
-
-    $ docker start postgres
-    # ...observe the memory buffered messages being rapidly inserted to the database when it comes back up
-
-
-### Design
-
-* application thread calling any logging method will hand off the log event immediately
-* a memory queue is used to buffer log events (`java.util.concurrent.BlockingDeque`)
-* log events are written to the database in the background
-* a single writer background thread is used (avoids further locking and gives highest write throughput)
-* automatically re-connects at a throttled rate if the database is disconnected (or on any form of SQL exception)
-* outputs warning messages if number of messages in the queue exceeds your configured warning threshold
-* outputs warning messages if the queue is full
-* configurable drain time once the application shuts down
 
 ### Usage
 
@@ -129,11 +97,87 @@ See the `log4j.example.properties` file for a full description.
 
 ### Verbose mode
 
-You can set system property "log4jq.debug" to "true" to output more internal information to the stdout.
+You can set system property "log4jq.debug" to "true" to output more internal information to stdout.
 
     -Dlog4jq.debug=true
 
-The asynchronous logger outputs warnings via log4j's LogLog.warn() method.
+Warning use Log4J's internal standard LogLog.warn() method.
+
+
+### See a demo!
+
+First clone this repo and cd into it, then:
+
+    docker run -d --name postgres -p 5432:5432 postgres
+    docker build -t demo .
+    docker run --rm --name demo --link postgres demo
+
+The demo app configures Log4J (see "src/test/resources/demo/postgres/log4j.properties"), creating a table called `applog` to hold the messages
+and then goes into a loop calling logger.info() (5 times per second by default).
+You will see the database write logged for each message (as the demo is running in a chatty debug mode):
+
+    org.exaspace.log4jq.DiscardingJdbcAppender 1174290147 Inserted message: message 0
+    org.exaspace.log4jq.DiscardingJdbcAppender 1174290147 Inserted message: message 1
+    org.exaspace.log4jq.DiscardingJdbcAppender 1174290147 Inserted message: message 2
+    ...
+
+You can keep an eye on how many messages have been inserted into the database:
+
+    docker exec postgres psql -U postgres -d postgres -c 'select count(*) from applog'
+
+Ok, now let's stop the log database!
+
+    docker stop postgres  # we will soon observe messages being buffered to memory while the database is down...
+
+As soon as docker actually stops the database, you will see an exception logged by the appender, and it will tell you that log messages are being queued in RAM
+(and will report periodic information about the queue size).
+
+    ...
+    org.exaspace.log4jq.DiscardingJdbcAppender 1607460018 Inserted message: message 110
+    org.exaspace.log4jq.DiscardingJdbcAppender 1607460018 Inserted message: message 111
+    log4j:ERROR org.exaspace.log4jq.DiscardingJdbcAppender 1607460018 Exception during insert so closing connection
+    Append failed! Will retry after 4100ms
+    org.exaspace.log4jq.DiscardingJdbcAppender 1607460018 Attempting to connect to jdbc url jdbc:postgresql://postgres/postgres
+     size=37 (7.0% full) discards=0 submitted=150 avail=463 capacity=500 freeVmBytes=27802032
+     size=87 (17.0% full) discards=0 submitted=200 avail=413 capacity=500 freeVmBytes=27802032
+     size=137 (27.0% full) discards=0 submitted=250 avail=363 capacity=500 freeVmBytes=27623776
+     ...
+
+As you can see, no inserts are now logged. The queue is filling up quickly! The demo has deliberately configured a tiny capacity memory queue of only 500 messages!
+
+Ok now let's start the database again:
+
+    docker start postgres  # we will soon observe the memory buffered messages being rapidly inserted to the database when it comes back up
+
+There's a bit of a lag due to docker machinery, but once the container is linked again, you'll see the appender re-connect and insert messages where it left off.
+
+    log4j:WARN Queue size exceeds your configured warning threshold  size=326 (65.0% full) discards=0 submitted=439 avail=174 capacity=500 freeVmBytes=27267144
+    org.exaspace.log4jq.DiscardingJdbcAppender 1607460018 Connection SUCCESS org.postgresql.jdbc.PgConnection@200ca29f
+    org.exaspace.log4jq.DiscardingJdbcAppender 1607460018 Inserted message: message 112
+    org.exaspace.log4jq.DiscardingJdbcAppender 1607460018 Inserted message: message 113
+    org.exaspace.log4jq.DiscardingJdbcAppender 1607460018 Inserted message: message 114
+    ...
+
+If you leave the database offline long enough for the queue to fill up, you'll see error messages being reported that new messages are now being discarded. Again, once
+the database is restarted, the appenender will connect again and write its queue to the database as quickly as possible.
+
+#### Running the demo without Docker:
+
+You'll need postgresql installed and running.
+
+1. Make sure postgres is running
+2. Configure your postgres database details in "src/test/resources/demo/postgres/log4j.properties".
+3. Run `./gradlew -Pdatabase=postgres demo`  (the task `demo` runs the Java class `org.exaspace.log4jq.demo.Demo`)
+4. psql into your database and run `select count(*) from applog` at any time to see how many messages have been stored
+
+#### Selecting a database for demo
+
+You have to tell the demo class which type of database dialect to use.
+The database to use can be specified either as an environment variable as in `DATABASE=postgres ./gradlew demo` or as a gradle property `./gradlew -Pdatabase=postgres demo`.
+If you are running the demo in a docker container then you can use the `-e` flag to pass the environment variable as in `docker run -e DATABASE=postgres ...`
+
+TODO: Currently only the value `postgres` is supported.
+
 
 ### References and Notes
 

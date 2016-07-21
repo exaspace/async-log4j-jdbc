@@ -2,12 +2,17 @@ package org.exaspace.log4jq.support;
 
 public class Dialects {
 
-    public static Dialect forDefaultDatabase() {
-        return forDatabase(System.getProperty("database", "hsql"));
+    public static String defaultDatabase() {
+        String ret = System.getProperty("database", System.getenv("DATABASE"));
+        return ret != null ? ret : "hsql";
     }
 
-    public static Dialect forDatabase(String database) {
-        Dialect ret = null;
+    public static Dialect forDefaultDatabase() {
+        return forDatabase(defaultDatabase());
+    }
+
+    public static Dialect forDatabase(final String database) {
+        Dialect ret;
         switch (database) {
             case "hsql":
                 ret = new HsqlDialect();
@@ -16,7 +21,7 @@ public class Dialects {
                 ret = new PostgresDialect();
                 break;
             default:
-                throw new RuntimeException("Unknown database: " + database);
+                throw new RuntimeException("Unknown test database type specified: " + database);
         }
         return ret;
     }
