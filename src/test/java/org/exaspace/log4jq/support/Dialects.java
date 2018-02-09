@@ -3,7 +3,7 @@ package org.exaspace.log4jq.support;
 public class Dialects {
 
     public static String defaultDatabase() {
-        String ret = System.getProperty("database", System.getenv("DATABASE"));
+        String ret = System.getProperty("log4jq_database", System.getenv("LOG4JQ_DATABASE"));
         return ret != null ? ret : "hsql";
     }
 

@@ -8,13 +8,17 @@
 
 # Asynchronous database logging (Log4J version).
 
-Log easily, resiliently and robustly to a central database via JDBC.
+Send application logs easily and resiliently to a database via JDBC.
 
-No coding needed, just update your Log4J configuration file.
+No code changes needed: just update your Log4J configuration file.
 
-Why log to an RDBMS?
+* **Logging is done asynchronously so that your application threads don't block trying to do any I/O**.
 
-* collect log messages easily from multiple JVMs in realtime in a central location
+* **If your log database becomes slow or even totally unavailable, your application is not impacted and continues to log as normal.**
+
+Why might you send your log messages to a database?
+
+* collect logs easily from multiple JVMs in realtime in a central location
 * use any database that provides a JDBC driver
 * store log messages with standard Log4J pattern meta data (e.g. timestamp, priority, source file line number, etc.)
 * search your app logs in realtime with a proper query language - SQL
@@ -24,11 +28,7 @@ Why log to an RDBMS?
 ## What is this library?
 
 A Log4J appender `org.exaspace.log4jq.AsyncJdbcAppender` which you drop straight into your application to send
-your log messages asynchronously and robustly to any database that has a JDBC driver.
-
-Logging is done asynchronously so that your application threads don't block trying to do the actual database I/O.
-
-If your log database becomes slow or even totally unavailable, your application is not impacted and continues to log as normal.
+your log messages asynchronously to any database that has a JDBC driver.
 
 The appender re-connects automatically to write any queued log events when the database comes back online.
 
@@ -108,13 +108,17 @@ Warning use Log4J's internal standard LogLog.warn() method.
 
 First clone this repo and cd into it, then:
 
-    docker run -d --name postgres -p 5432:5432 postgres  # let's start a postgres database server
-    docker build -t demo .                               # compile the demo into a docker container
-    docker run --rm --name demo --link postgres demo     # now run the demo, linking it so it can see postgres
+    docker-compose build      # builds the app into a docker image
+    docker-compose up -d      # starts postgres container and the demo application (in background mode)
 
-The demo app configures Log4J (see "src/test/resources/demo/postgres/log4j.properties"), creating a table called `applog` to hold the messages
-and then goes into a loop calling logger.info() (5 times per second by default).
-You will see the database write logged for each message (as the demo is running in a chatty debug mode):
+The demo app configures Log4J (see "src/test/resources/demo/postgres/log4j.properties"), creating a table called `applog` 
+to hold the messages and then goes into a loop calling logger.info() (5 times per second by default).
+
+You can keep an eye on the logs with:
+
+    docker-compose logs -f
+
+You will see a database write logged for each message (as the demo is running in a chatty debug mode):
 
     org.exaspace.log4jq.DiscardingJdbcAppender 1174290147 Inserted message: message 0
     org.exaspace.log4jq.DiscardingJdbcAppender 1174290147 Inserted message: message 1
@@ -123,11 +127,11 @@ You will see the database write logged for each message (as the demo is running 
 
 You can keep an eye on how many messages have been inserted into the database:
 
-    docker exec postgres psql -U postgres -d postgres -c 'select count(*) from applog'
+    docker-compose exec  postgres psql -U postgres -c 'select count(*) from applog'
 
 Ok, now let's stop the log database!
 
-    docker stop postgres  # we will soon observe messages being buffered to memory while the database is down...
+    docker-compose stop postgres  # ...we will soon observe messages being buffered to memory while the database is down
 
 As soon as docker actually stops the database, you will see an exception logged by the appender, and it will tell you that log messages are being queued in RAM
 (and will report periodic information about the queue size).
@@ -143,11 +147,14 @@ As soon as docker actually stops the database, you will see an exception logged 
      size=137 (27.0% full) discards=0 submitted=250 avail=363 capacity=500 freeVmBytes=27623776
      ...
 
-As you can see, no inserts are now logged. The queue is filling up quickly! The demo has deliberately configured a tiny capacity memory queue of only 500 messages!
+As you can see, no inserts are now logged. The queue is filling up quickly! 
+
+The demo has deliberately configured a tiny capacity memory queue of only 500 messages.
 
 Ok now let's start the database again:
 
-    docker start postgres  # we will soon observe the memory buffered messages being rapidly inserted to the database when it comes back up
+    docker-compose up postgres  
+    # ...you should soon observe the log messages that were kep in memory being rapidly inserted to the database when it comes back up
 
 There's a bit of a lag due to docker machinery, but once the container is linked again, you'll see the appender re-connect and insert messages where it left off.
 
@@ -161,19 +168,23 @@ There's a bit of a lag due to docker machinery, but once the container is linked
 If you leave the database offline long enough for the queue to fill up, you'll see error messages being reported that new messages are now being discarded. Again, once
 the database is restarted, the appenender will connect again and write its queue to the database as quickly as possible.
 
+When you are finished with the demo, just run `docker-compose down`.
+
+
 #### Running the demo without Docker:
 
 You'll need postgresql installed and running.
 
 1. Make sure postgres is running
 2. Configure your postgres database details in "src/test/resources/demo/postgres/log4j.properties".
-3. Run `./gradlew -Pdatabase=postgres demo`  (the task `demo` runs the Java class `org.exaspace.log4jq.demo.Demo`)
+3. Run `./gradlew -Plog4jq_database=postgres demo`  (the task `demo` runs the Java class `org.exaspace.log4jq.demo.Demo`)
 4. psql into your database and run `select count(*) from applog` at any time to see how many messages have been stored
+
 
 #### Selecting a database for demo
 
 You have to tell the demo class which type of database dialect to use.
-The database to use can be specified either as an environment variable as in `DATABASE=postgres ./gradlew demo` or as a gradle property `./gradlew -Pdatabase=postgres demo`.
+The database to use can be specified either as an environment variable as in `DATABASE=postgres ./gradlew demo` or as a gradle property `./gradlew -Plog4jq_database=postgres demo`.
 If you are running the demo in a docker container then you can use the `-e` flag to pass the environment variable as in `docker run -e DATABASE=postgres ...`
 
 TODO: Currently only the value `postgres` is supported.

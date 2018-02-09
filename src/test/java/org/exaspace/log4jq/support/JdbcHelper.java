@@ -39,7 +39,7 @@ public class JdbcHelper implements AutoCloseable {
 
     public List<LogMessage> selectAllLogMessages(String selectAllSql) throws Exception {
         try (ResultSet rs = executeSql(selectAllSql)) {
-            List<LogMessage> ret = new ArrayList();
+            List<LogMessage> ret = new ArrayList<>();
             while(rs.next()) {
                 ret.add(logMessageFromResultSet(rs));
             }

@@ -1,0 +1,13 @@
+version: '2'
+
+services:
+
+  log4jq-demo:
+    build: .
+    command: >
+      ./gradlew -Dorg.gradle.daemon=false --offline -Plog4jq_database=postgres demo
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres

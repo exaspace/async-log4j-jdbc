@@ -1,6 +1,5 @@
 package org.exaspace.log4jq.perf;
 
-import org.apache.commons.collections.Buffer;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -8,12 +7,14 @@ import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.LoggingEvent;
 import org.junit.Test;
 
+import java.util.Queue;
+
 import static org.junit.Assert.assertEquals;
 
 public class CyclicMemoryAppenderTest {
 
     @Test
-    public void shouldStoreLogEventsInCyclicBuffer() throws InterruptedException {
+    public void shouldStoreLogEventsInCyclicBuffer() {
 
         LogManager.resetConfiguration();
 
@@ -34,21 +35,21 @@ public class CyclicMemoryAppenderTest {
         log.setAdditivity(false);
         log.addAppender(memoryAppender);
 
-        Buffer buffer = memoryAppender.getBuffer();
+        Queue<LoggingEvent> buffer = memoryAppender.getBuffer();
 
         log.info("foo");
         log.info("bar");
         log.info("baz");
 
-        assertEquals("bar", ((LoggingEvent) buffer.remove()).getMessage());
-        assertEquals("baz", ((LoggingEvent) buffer.remove()).getMessage());
+        assertEquals("bar", buffer.remove().getMessage());
+        assertEquals("baz", buffer.remove().getMessage());
         assertEquals(0, buffer.size());
 
         for (int i = 0; i <= 10; i++) {
             log.info(String.valueOf(i));
         }
-        assertEquals("9", ((LoggingEvent) buffer.remove()).getMessage());
-        assertEquals("10", ((LoggingEvent) buffer.remove()).getMessage());
+        assertEquals("9", buffer.remove().getMessage());
+        assertEquals("10", buffer.remove().getMessage());
         assertEquals(0, buffer.size());
     }
 

@@ -1,7 +1,7 @@
 
 plugins {
     id 'java'
-    id 'pl.allegro.tech.build.axion-release' version '1.3.5'
+    id 'pl.allegro.tech.build.axion-release' version '1.8.3'
 }
 
 description = 'Async Log4J Queue'
@@ -14,8 +14,8 @@ dependencies {
     compile 'log4j:log4j:1.2.16'
 
     testCompile 'junit:junit:4.12'
-    testCompile 'commons-lang:commons-lang:2.6'
-    testCompile 'commons-collections:commons-collections:3.2.1'
+    testCompile 'org.apache.commons:commons-lang3:3.7'
+    testCompile 'org.apache.commons:commons-collections4:4.1'
     testCompile 'org.hsqldb:hsqldb:2.3.4'
     testCompile 'mysql:mysql-connector-java:5.1.39'
     testCompile 'org.postgresql:postgresql:9.4.1208'
@@ -27,21 +27,6 @@ dependencies {
         testCompile 'com.microsoft:sqljdbc4:3.0'
         testCompile 'com.mannhaupt:log4j-jdbcplus:1.0'
     */
-}
-
-task demo(type:JavaExec) {
-    main = "org.exaspace.log4jq.demo.Demo"
-    classpath = sourceSets.test.runtimeClasspath
-    doFirst {
-        if(project.hasProperty('database')) {
-            environment 'DATABASE', project.property('database')
-        }
-    }
-}
-
-task testJar(type: Jar) {
-    classifier = 'tests'
-    from sourceSets.test.output
 }
 
 scmVersion {
@@ -57,8 +42,41 @@ jar {
     version = "$project.version"
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '2.14'
+sourceCompatibility = 1.7
+
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
 
+compileTestJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
 
+tasks.withType(Test) {
+    testLogging {
+        exceptionFormat "full"
+        events "failed"
+        showStandardStreams false
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.5'
+}
+
+task testJar(type: Jar) {
+    classifier = 'tests'
+    from sourceSets.test.output
+}
+
+task demo(type:JavaExec) {
+    main = "org.exaspace.log4jq.demo.Demo"
+    classpath = sourceSets.test.runtimeClasspath
+    doFirst {
+        if(project.hasProperty('log4jq_database')) {
+            environment 'LOG4JQ_DATABASE', project.property('log4jq_database')
+        }
+    }
+}

@@ -24,7 +24,7 @@ public class Log4jSupport {
     }
 
     private static Appender createAppender(String className) throws Exception {
-        Appender appender = (Appender) Class.forName(className).newInstance();
+        Appender appender = (Appender) Class.forName(className).getDeclaredConstructor().newInstance();
         return appender;
     }
 

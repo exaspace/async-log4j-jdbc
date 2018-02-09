@@ -1,11 +1,11 @@
 package org.exaspace.log4jq.perf;
 
-import org.apache.commons.collections.Buffer;
-import org.apache.commons.collections.BufferUtils;
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LoggingEvent;
+
+import java.util.Queue;
 
 /**
  * Simple appender which log events in memory (up to maxElements) into a circular
@@ -18,7 +18,7 @@ public class CyclicMemoryAppender extends AppenderSkeleton {
 	// Config value (i.e. that can be configured from log4j framework)
 	private int maxElements = 1000;
 
-	private Buffer fifo;
+	private Queue<LoggingEvent> fifo;
 
 	public CyclicMemoryAppender() {
 	}
@@ -26,7 +26,7 @@ public class CyclicMemoryAppender extends AppenderSkeleton {
 	@Override
 	public void activateOptions() {
 		System.err.println("Creating new Cyclic MemoryAppender, maxElements=" + maxElements);
-		fifo = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(maxElements));
+		fifo = new CircularFifoQueue<>(maxElements);
 		LogLog.debug("activateOptions. bufsize=" + maxElements);
 	}
 
@@ -50,7 +50,7 @@ public class CyclicMemoryAppender extends AppenderSkeleton {
 	}
 
 	// Allow clients to access the internal fifo directly. 
-	public Buffer getBuffer() {
+	public Queue<LoggingEvent> getBuffer() {
 		return fifo;
 	}
 

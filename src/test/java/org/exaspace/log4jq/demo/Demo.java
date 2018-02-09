@@ -12,6 +12,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.util.Properties;
 
+
 /**
  * This app can be used to show the memory queue in action, and database logging against different databases.
  *
