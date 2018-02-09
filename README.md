@@ -104,7 +104,8 @@ You can set system property "log4jq.debug" to "true" to output more internal inf
 Warning use Log4J's internal standard LogLog.warn() method.
 
 
-### See a live demo!
+See a live demo!
+----------------
 
 First clone this repo and cd into it, then:
 
@@ -129,12 +130,12 @@ You can keep an eye on how many messages have been inserted into the database:
 
     docker-compose exec  postgres psql -U postgres -c 'select count(*) from applog'
 
-Ok, now let's stop the log database!
+Ok, now let's stop the database server!
 
     docker-compose stop postgres  # ...we will soon observe messages being buffered to memory while the database is down
 
-As soon as docker actually stops the database, you will see an exception logged by the appender, and it will tell you that log messages are being queued in RAM
-(and will report periodic information about the queue size).
+As soon as docker stops the database, you will see an exception logged by the appender, and it will tell you that log messages are being queued 
+in RAM (and you will see periodic reports about the queue size).
 
     ...
     org.exaspace.log4jq.DiscardingJdbcAppender 1607460018 Inserted message: message 110
@@ -181,11 +182,13 @@ You'll need postgresql installed and running.
 4. psql into your database and run `select count(*) from applog` at any time to see how many messages have been stored
 
 
-#### Selecting a database for demo
+#### Selecting a different database for the demo
 
 You have to tell the demo class which type of database dialect to use.
-The database to use can be specified either as an environment variable as in `DATABASE=postgres ./gradlew demo` or as a gradle property `./gradlew -Plog4jq_database=postgres demo`.
-If you are running the demo in a docker container then you can use the `-e` flag to pass the environment variable as in `docker run -e DATABASE=postgres ...`
+The database to use can be specified either as an environment variable as in `LOG4JQ_DATABASE=postgres ./gradlew demo` 
+or as a gradle property `./gradlew -Plog4jq_database=postgres demo`.
+If you are running the demo in a docker container then you can use the `-e` flag to pass the environment variable as in 
+`docker run -e LOG4JQ_DATABASE=postgres ...`
 
 TODO: Currently only the value `postgres` is supported.
 
