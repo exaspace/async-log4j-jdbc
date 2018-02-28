@@ -10,7 +10,7 @@
 
 Send application logs easily and resiliently to a database via JDBC.
 
-No code changes needed: just update your Log4J configuration file.
+No code changes needed: just update your Log4J configuration file!
 
 * **Logging is done asynchronously so that your application threads don't block trying to do any I/O**.
 

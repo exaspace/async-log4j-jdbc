@@ -1,4 +1,4 @@
-FROM java:8
+FROM openjdk:9-jdk-slim
 
 WORKDIR /demo
 ADD . /demo

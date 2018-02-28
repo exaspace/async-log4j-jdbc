@@ -1,5 +1,6 @@
-
 Run 1 - Comparison vs jdbcplus & bundled jdbc appender
+
+Config used:
 
 	static int LOOPS_PER_THREAD = 1000;
 	static int NUM_THREADS = 15;
