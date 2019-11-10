@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    compile 'log4j:log4j:1.2.16'
+    compile 'log4j:log4j:1.2.17'
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.apache.commons:commons-lang3:3.7'

@@ -6,7 +6,7 @@
 
 [![Build Status](https://travis-ci.org/exaspace/async-log4j-jdbc.svg?branch=master)](https://travis-ci.org/exaspace/async-log4j-jdbc)
 
-# Asynchronous database logging (Log4J version).
+# Asynchronous database logging (Log4J 1 version).
 
 Send application logs easily and resiliently to a database via JDBC.
 
@@ -27,8 +27,7 @@ Why might you send your log messages to a database?
 
 ## What is this library?
 
-A Log4J appender `org.exaspace.log4jq.AsyncJdbcAppender` which you drop straight into your application to send
-your log messages asynchronously to any database that has a JDBC driver.
+A Log4J appender `org.exaspace.log4jq.AsyncJdbcAppender` which you drop straight into your application to send log messages asynchronously to any database that has a JDBC driver.
 
 The appender re-connects automatically to write any queued log events when the database comes back online.
 
@@ -112,7 +111,7 @@ First clone this repo and cd into it, then:
     docker-compose build      # builds the app into a docker image
     docker-compose up -d      # starts postgres container and the demo application (in background mode)
 
-The demo app configures Log4J (see "src/test/resources/demo/postgres/log4j.properties"), creating a table called `applog` 
+The demo app configures Log4J (see "src/test/resources/demo/postgres/log4j.properties"), creating a table called `applog`
 to hold the messages and then goes into a loop calling logger.info() (5 times per second by default).
 
 You can keep an eye on the logs with:
@@ -134,7 +133,7 @@ Ok, now let's stop the database server!
 
     docker-compose stop postgres  # ...we will soon observe messages being buffered to memory while the database is down
 
-As soon as docker stops the database, you will see an exception logged by the appender, and it will tell you that log messages are being queued 
+As soon as docker stops the database, you will see an exception logged by the appender, and it will tell you that log messages are being queued
 in RAM (and you will see periodic reports about the queue size).
 
     ...
@@ -148,13 +147,13 @@ in RAM (and you will see periodic reports about the queue size).
      size=137 (27.0% full) discards=0 submitted=250 avail=363 capacity=500 freeVmBytes=27623776
      ...
 
-As you can see, no inserts are now logged. The queue is filling up quickly! 
+As you can see, no inserts are now logged. The queue is filling up quickly!
 
 The demo has deliberately configured a tiny capacity memory queue of only 500 messages.
 
 Ok now let's start the database again:
 
-    docker-compose up postgres  
+    docker-compose up postgres
     # ...you should soon observe the log messages that were kep in memory being rapidly inserted to the database when it comes back up
 
 There's a bit of a lag due to docker machinery, but once the container is linked again, you'll see the appender re-connect and insert messages where it left off.
@@ -185,9 +184,9 @@ You'll need postgresql installed and running.
 #### Selecting a different database for the demo
 
 You have to tell the demo class which type of database dialect to use.
-The database to use can be specified either as an environment variable as in `LOG4JQ_DATABASE=postgres ./gradlew demo` 
+The database to use can be specified either as an environment variable as in `LOG4JQ_DATABASE=postgres ./gradlew demo`
 or as a gradle property `./gradlew -Plog4jq_database=postgres demo`.
-If you are running the demo in a docker container then you can use the `-e` flag to pass the environment variable as in 
+If you are running the demo in a docker container then you can use the `-e` flag to pass the environment variable as in
 `docker run -e LOG4JQ_DATABASE=postgres ...`
 
 TODO: Currently only the value `postgres` is supported.
