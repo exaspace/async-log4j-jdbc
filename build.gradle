@@ -1,7 +1,7 @@
 
 plugins {
     id 'java'
-    id 'pl.allegro.tech.build.axion-release' version '1.8.3'
+    id 'pl.allegro.tech.build.axion-release' version '1.10.2'
 }
 
 description = 'Async Log4J Queue'
@@ -62,8 +62,8 @@ tasks.withType(Test) {
     }
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.5'
+wrapper {
+    gradleVersion = '6.0'
 }
 
 task testJar(type: Jar) {
