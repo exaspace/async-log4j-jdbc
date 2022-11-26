@@ -1,4 +1,4 @@
-FROM openjdk:13
+FROM eclipse-temurin:18
 
 WORKDIR /demo
 

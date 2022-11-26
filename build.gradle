@@ -1,7 +1,7 @@
 
 plugins {
     id 'java'
-    id 'pl.allegro.tech.build.axion-release' version '1.10.2'
+    id 'pl.allegro.tech.build.axion-release' version '1.14.2'
 }
 
 description = 'Async Log4J Queue'
@@ -13,12 +13,14 @@ repositories {
 dependencies {
     implementation 'log4j:log4j:1.2.17'
 
-    testCompileOnly 'junit:junit:4.12'
-    testCompileOnly 'org.apache.commons:commons-lang3:3.7'
-    testCompileOnly 'org.apache.commons:commons-collections4:4.1'
-    testCompileOnly 'org.hsqldb:hsqldb:2.3.4'
-    testCompileOnly 'mysql:mysql-connector-java:5.1.39'
-    testCompileOnly 'org.postgresql:postgresql:9.4.1208'
+    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
+
+    testImplementation 'junit:junit:4.13'
+    testImplementation 'org.apache.commons:commons-lang3:3.12.0'
+    testImplementation 'org.apache.commons:commons-collections4:4.4'
+    testImplementation 'org.hsqldb:hsqldb:2.7.1'
+    testImplementation 'mysql:mysql-connector-java:8.0.31'
+    testImplementation 'org.postgresql:postgresql:42.5.1'
 
     /*
         The dependencies below are not in public repos.
