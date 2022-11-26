@@ -11,21 +11,21 @@ repositories {
 }
 
 dependencies {
-    compile 'log4j:log4j:1.2.17'
+    implementation 'log4j:log4j:1.2.17'
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.apache.commons:commons-lang3:3.7'
-    testCompile 'org.apache.commons:commons-collections4:4.1'
-    testCompile 'org.hsqldb:hsqldb:2.3.4'
-    testCompile 'mysql:mysql-connector-java:5.1.39'
-    testCompile 'org.postgresql:postgresql:9.4.1208'
+    testCompileOnly 'junit:junit:4.12'
+    testCompileOnly 'org.apache.commons:commons-lang3:3.7'
+    testCompileOnly 'org.apache.commons:commons-collections4:4.1'
+    testCompileOnly 'org.hsqldb:hsqldb:2.3.4'
+    testCompileOnly 'mysql:mysql-connector-java:5.1.39'
+    testCompileOnly 'org.postgresql:postgresql:9.4.1208'
 
     /*
         The dependencies below are not in public repos.
         Add to your own repositories if you need these.
 
-        testCompile 'com.microsoft:sqljdbc4:3.0'
-        testCompile 'com.mannhaupt:log4j-jdbcplus:1.0'
+        testCompileOnly 'com.microsoft:sqljdbc4:3.0'
+        testCompileOnly 'com.mannhaupt:log4j-jdbcplus:1.0'
     */
 }
 
@@ -63,7 +63,7 @@ tasks.withType(Test) {
 }
 
 wrapper {
-    gradleVersion = '6.0'
+    gradleVersion = '7.6'
 }
 
 task testJar(type: Jar) {
