@@ -1,0 +1,27 @@
+name: Tests
+on:
+  schedule:
+    # trigger every Thursday at 00:51
+    - cron:  '51 0 * * 4'
+  
+  workflow_dispatch:
+    # allow manual triggering
+
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  
+  test:
+  
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: "Check out code"
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: "Test"
+        run: ./gradlew test

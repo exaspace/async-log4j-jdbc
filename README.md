@@ -7,6 +7,8 @@
 
 # Asynchronous database logging (Log4J v1 compatible).
 
+[![Tests](https://github.com/exaspace/async-log4j-jdbc/actions/workflows/main.yml/badge.svg)](https://github.com/exaspace/async-log4j-jdbc/actions/workflows/main.yml)
+
 Send application logs easily and resiliently to a database via JDBC.
 
 No code changes needed: just update your Log4J configuration file.
